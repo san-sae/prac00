@@ -5,6 +5,7 @@
 #include<sys/wait.h>
 #include<string.h>
 #include<sys/time.h>
+#include<limits.h>
 
 int main(int argc, char *argv[]){
     int opt;
@@ -35,7 +36,12 @@ int main(int argc, char *argv[]){
     }
 
     targetsrc = argv[optind];
-
+    
+    char absolute_path[PATH_MAX];
+    if(realpath(targetsrc, absolute_path) == NULL){
+        perror("realpath");
+        exit(EXIT_FAILURE);
+    }
 
     int total_inputs = 0;
     int success_count = 0;
@@ -51,7 +57,7 @@ int main(int argc, char *argv[]){
 
     for(int i = 1; i<=10; i++){
         char input_file[100];
-        sprintf(input_file, "%s/%d.txt", inputdir, i);
+        sprintf(input_file, "./%s/%d.txt", inputdir, i);
         
         // Create pipe for communication
         int fd[2];
