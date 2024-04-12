@@ -49,7 +49,7 @@ int main(int argc, char *argv[]){
 
     gettimeofday(&start_time, NULL);
 
-    for(int i = i; i<=20; i++){
+    for(int i = 1; i<=10; i++){
         char input_file[100];
         sprintf(input_file, "%s/%d.txt", inputdir, i);
         
