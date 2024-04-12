@@ -57,7 +57,7 @@ int main(int argc, char *argv[]){
 
     for(int i = 1; i<=10; i++){
         char input_file[100];
-        sprintf(input_file, "./%s/%d.txt", inputdir, i);
+        sprintf(input_file, "./input/%d.txt", i);
         
         // Create pipe for communication
         int fd[2];
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]){
              * 3rd. 실행할 프로그램이 필요로 하는 입력 또는 설정 전달
              * 4th. 추가적인 실행 인자, 마지막 인자는 항상 NULL로 설정하며 이는 인자 목록의 끝을 의미함
             */
-            execlp(targetsrc, targetsrc, input_file, NULL);
+            execlp("gcc", "gcc", "-fsanitize=address", "-o", targetsrc, targetsrc, NULL);
             perror("excelp");
             exit(EXIT_FAILURE);
         }
