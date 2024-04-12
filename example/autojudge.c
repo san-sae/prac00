@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
     int timelimit;
     
     // command-line 유효성 검사
-    while((opt = getopt(argc, argv, "i:a:t")) != -1){
+    while((opt = getopt(argc, argv, "i:a:t:")) != -1){
         switch(opt){
             case 'i':
                 inputdir = optarg;
@@ -56,14 +56,14 @@ int main(int argc, char *argv[]){
         // Create pipe for communication
         int fd[2];
         if(pipe(fd) == -1){
-            perror("Pipe Error");
+            perror("pipe");
             exit(EXIT_FAILURE);
         }
 
         // Fork child process
         pid_t pid = fork();
         if(pid == -1){
-            perror("Fork Error");
+            perror("fork");
             exit(EXIT_FAILURE);
         }
 
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
 
             // redirect stdout to the write end of the pipe
             if(dup2(fd[1], STDOUT_FILENO) == -1){
-                perror("Dup2 Error");
+                perror("dup2");
             }
             close(fd[1]);
 
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]){
              * 4th. 추가적인 실행 인자, 마지막 인자는 항상 NULL로 설정하며 이는 인자 목록의 끝을 의미함
             */
             execlp(targetsrc, targetsrc, input_file, NULL);
-            perror("Excelp Error ");
+            perror("excelp");
             exit(EXIT_FAILURE);
         }
         else{ // parent process
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]){
             char buffer[4096]; // Adjust buffer size as needed
             ssize_t bytes_read = read(fd[0], buffer, sizeof(buffer));
             if(bytes_read == -1){
-                perror("Read Error");
+                perror("read");
                 exit(EXIT_FAILURE);
             }
             close(fd[0]);
@@ -121,7 +121,7 @@ int main(int argc, char *argv[]){
                         char output_str[4096]; // Adjust buffer size as needed
                         ssize_t bytes_read_pipe = read(fd[0], output_str, sizeof(output_str));
                         if(bytes_read_pipe == -1){
-                            perror("Read Error");
+                            perror("read");
                             exit(EXIT_FAILURE);
                         }
 
