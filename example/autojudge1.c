@@ -91,7 +91,7 @@ int countExistingFiles(const char *directory){
 void compileFile(const char *directory, const char *filename){
     char dir_filename[100];
     sprintf(dir_filename, "%s/%s", directory, filename); 
-    char *args[] = {"gcc", "-fsanitize=address", dir_filename, "-o", filename, NULL};
+    char *args[] = {"gcc", "-fsanitize=address", dir_filename, "-o", dir_filename, NULL};
 
     if(execvp("gcc", args) == -1){
         perror("execvp failed");
@@ -116,8 +116,7 @@ void compileAndExec(const char *directory, int num_files){
             exit(EXIT_SUCCESS);
         }
         else{
-            int status;
-            wait(&status);
+            // 실행파일 실행
         }
     }
 }
