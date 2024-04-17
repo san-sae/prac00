@@ -7,34 +7,108 @@
 #include<sys/time.h>
 #include<limits.h>
 
-int main(int argc, char *argv[]){
-    int opt;
-    char *inputdir, *outputdir, *targetsrc;
-    int timelimit;
+#define MAX_FILES 20
 
-    // command-line 유효성 검사
-    while((opt = getopt(argc, argv, "i:a:t:")) != -1){
-        switch(opt){
+char *inputdir, *answerdir, *targetsrc;
+int timelimit;
+
+int validation_opt(int argc, char *argv[]){
+    int option;
+
+    while((option = getopt(argc, argv, "i:a:t:")) != -1){
+        switch(option){
             case 'i':
                 inputdir = optarg;
                 break;
             case 'a':
-                outputdir = optarg;
+                answerdir = optarg;
                 break;
             case 't':
                 timelimit = atoi(optarg);
                 break;
             default:
-                fprintf(stderr, "Usage: %s -i <inputdir> -a <outputdir> -t <timelimit> <target src>\n", argv[0]);
+                fprintf(stderr, "Usage: ./%s -i <inputdir> -a <answerdir> -t <timelimit> <target src>\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
 
-    if(argc - optind != 1) { 
-        fprintf(stderr, "Usage: %s -i <inputdir> -a <outputdir> -t <timelimit> <target src>\n", argv[0]);
+    if(argc - optind != 1){
+        fprintf(stderr, "Usage: ./%s -i <inputdir> -a <answerdir> -t <timelimit> <target src>\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+}
+            
+int countExistingFiles(const char *directory){
+    int pipes[2];
+    pid_t pid;
+    int existingFiles = 0;
+
+    if(pipe(pipes) == -1){
+        perror("Pipe creation failed");
         exit(EXIT_FAILURE);
     }
 
+    pid = fork();
+    if(pid < 0) {
+        perror("Fork failed");
+        exit(EXIT_FAILURE);
+    }
+    else if(pid == 0){ // 자식프로세스
+        close(pipes[0]);
+        
+        for(int i = i; i <= MAX_FILES; i++){
+            char filename[20];
+            sprintf(filename, "%s/%d.txt", directory, i);
+            // dir_name/i.txt가 존재하는 경우
+            if(access(filename, F_OK) != -1){
+                existingFiles++;
+            }
+        }
+
+        // 부모 프로세스로 파일 존재 여부 정보 전송
+        write(pipes[1], &existingFiles, sizeof(existingFiles));
+
+        close(pipes[1]);
+
+        exit(EXIT_SUCCESS);
+    }
+    else{ // 부모 프로세스
+        int exit_code;
+        close(pipes[1]);
+        
+        int count = 0;
+
+        read(pipes[0], &count, sizeof(count));
+
+        close(pipes[0]);
+
+        wait(&exit_code);
+
+        return count;
+    }
+}
+
+
+
+
+int main(int argc, char *argv[]){
+
+    // 명령행  유효성 검사 함수 호출
+    validation_opt(argc, argv);
+
+    // input, answer 디렉토리 내에 파일이 존재하는지 여부 체크
+    int numInputFiles = countExistingFiles(inputdir);
+    int numAnswerFiles = countExistingFiles(answerdir);
+
+    printf("num input files: %d\n", numInputFiles);
+    printf("num answer files: %d\n", numAnswerFiles);
+
+
+
+
+
+
+/*
     targetsrc = argv[optind];
     
     char absolute_path[PATH_MAX];
@@ -82,6 +156,7 @@ int main(int argc, char *argv[]){
                 perror("dup2");
             }
             close(fd[1]);
+*/
 
             // Execute the target program
             /* execlp()의 argument
@@ -90,7 +165,7 @@ int main(int argc, char *argv[]){
              * 3rd. 실행할 프로그램이 필요로 하는 입력 또는 설정 전달
              * 4th. 추가적인 실행 인자, 마지막 인자는 항상 NULL로 설정하며 이는 인자 목록의 끝을 의미함
             */
-            execlp(targetsrc, targetsrc, input_file, NULL);
+/*            execlp(targetsrc, targetsrc, input_file, NULL);
             perror("excelp");
             exit(EXIT_FAILURE);
         }
@@ -156,6 +231,6 @@ int main(int argc, char *argv[]){
     printf("Timeout count: %d\n", timeout_count);
     printf("Crash count: %d\n", crash_count);
     printf("Wrong answer count: %d\n", wrong_answer_count);
-
+*/
     return 0;
 }
