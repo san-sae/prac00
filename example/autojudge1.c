@@ -12,7 +12,7 @@
 char *inputdir, *answerdir, *targetsrc;
 int timelimit;
 
-int validation_opt(int argc, char *argv[]){
+void  validation_opt(int argc, char *argv[]){
     int option;
 
     while((option = getopt(argc, argv, "i:a:t:")) != -1){
@@ -56,7 +56,7 @@ int countExistingFiles(const char *directory){
     else if(pid == 0){ // 자식프로세스
         close(pipes[0]);
         
-        for(int i = i; i <= MAX_FILES; i++){
+        for(int i = 1; i <= MAX_FILES; i++){
             char filename[20];
             sprintf(filename, "%s/%d.txt", directory, i);
             // dir_name/i.txt가 존재하는 경우
@@ -88,8 +88,39 @@ int countExistingFiles(const char *directory){
     }
 }
 
+void compileFile(const char *directory, const char *filename){
+    char dir_filename[100];
+    sprintf(dir_filename, "%s/%s", directory, filename); 
+    char *args[] = {"gcc", "-fsanitize=address", dir_filename, "-o", filename, NULL};
 
+    if(execvp("gcc", args) == -1){
+        perror("execvp failed");
+        exit(EXIT_FAILURE);
+    }
+}
 
+void compileAndExec(const char *directory, int num_files){
+    // 컴파일
+    for(int i = 1; i <= num_files; i++){
+        char filename[10];
+        sprintf(filename, "%d.txt", i);
+
+        pid_t pid = fork();
+
+        if(pid < 0){
+            perror("Fork failed");
+            exit(EXIT_FAILURE);
+        }
+        else if(pid == 0){
+            compileFile(directory, filename);
+            exit(EXIT_SUCCESS);
+        }
+        else{
+            int status;
+            wait(&status);
+        }
+    }
+}
 
 int main(int argc, char *argv[]){
 
@@ -100,8 +131,10 @@ int main(int argc, char *argv[]){
     int numInputFiles = countExistingFiles(inputdir);
     int numAnswerFiles = countExistingFiles(answerdir);
 
-    printf("num input files: %d\n", numInputFiles);
-    printf("num answer files: %d\n", numAnswerFiles);
+    compileAndExec(inputdir, numInputFiles);
+    
+    printf("Compile completed\n");
+
 
 
 
@@ -110,12 +143,6 @@ int main(int argc, char *argv[]){
 
 /*
     targetsrc = argv[optind];
-    
-    char absolute_path[PATH_MAX];
-    if(realpath(targetsrc, absolute_path) == NULL){
-        perror("realpath");
-        exit(EXIT_FAILURE);
-    }
 
     int total_inputs = 0;
     int success_count = 0;
