@@ -119,25 +119,6 @@ void compileAndExec(){
     }
 }
 
-void processFile(const char *filename){
-    struct time
-
-
-
-
-
-
-
-
-
-void processAllFiles(int max_files){
-    for(int i=1; i <= max_files; i++){
-        char filename[20];
-        sprintf(filename, "%d.txt", i);
-        processFile(filename);
-        compareWithAnswer(filename);
-    }
-}
 
 int main(int argc, char *argv[]){
 
@@ -153,11 +134,8 @@ int main(int argc, char *argv[]){
     // c코드를 컴파일하고 실행파일 생성
     compileAndExec();
     
-    // input 디렉토리 내의 파일을 
+    /* 
     processAllFiles(numInputFiles);
-
-
-
 
     int total_inputs = 0;
     int success_count = 0;
@@ -263,6 +241,7 @@ int main(int argc, char *argv[]){
     printf("Timeout count: %d\n", timeout_count);
     printf("Crash count: %d\n", crash_count);
     printf("Wrong answer count: %d\n", wrong_answer_count);
+    */
 
     return 0;
 }
