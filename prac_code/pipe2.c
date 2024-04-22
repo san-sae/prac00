@@ -27,7 +27,7 @@ void parent_proc(){
 }
 
 int main(void){
-    pid_t, child_pid;
+    pid_t child_pid;
     int exit_code;
 
     if(pipe(pipes) != 0){
