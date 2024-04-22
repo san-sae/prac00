@@ -88,38 +88,37 @@ int countExistingFiles(const char *directory){
     }
 }
 
-void compileFile(const char *directory, const char *filename){
-    char dir_filename[100];
-    sprintf(dir_filename, "%s/%s", directory, filename); 
-    char *args[] = {"gcc", "-fsanitize=address", dir_filename, "-o", dir_filename, NULL};
-
-    if(execvp("gcc", args) == -1){
-        perror("execvp failed");
+void compileChildProcess() {
+    if(execlp("gcc", "gcc", "-fsanitize=address", "-o", "executable", targetsrc, NULL) == -1){
+        perror("execlp failed");
         exit(EXIT_FAILURE);
     }
 }
 
-void compileAndExec(const char *directory, int num_files){
-    // 컴파일
-    for(int i = 1; i <= num_files; i++){
-        char filename[10];
-        sprintf(filename, "%d.txt", i);
+void compileAndExec(){
+    pid_t pid = fork();
 
-        pid_t pid = fork();
+    if(pid < 0){
+        perror("Fork failed");
+        exit(EXIT_FAILURE);
+    }
+    else if(pid == 0){
+        compileChildProcess();
+    }
+    else{
+        int status;
+        
+        waitpid(pid, &status, 0);
 
-        if(pid < 0){
-            perror("Fork failed");
-            exit(EXIT_FAILURE);
-        }
-        else if(pid == 0){
-            compileFile(directory, filename);
-            exit(EXIT_SUCCESS);
+        if(WIFEXITED(status) && WEXITSTATUS(status) == EXIT_SUCCESS){
+            printf("Compilation successful.\n Executable created.\n");
         }
         else{
-            // 실행파일 실행
+            printf("Compilation failed.");
         }
     }
 }
+
 
 int main(int argc, char *argv[]){
 
@@ -129,19 +128,14 @@ int main(int argc, char *argv[]){
     // input, answer 디렉토리 내에 파일이 존재하는지 여부 체크
     int numInputFiles = countExistingFiles(inputdir);
     int numAnswerFiles = countExistingFiles(answerdir);
-
-    compileAndExec(inputdir, numInputFiles);
     
-    printf("Compile completed\n");
-
-
-
-
-
-
-
-/*
     targetsrc = argv[optind];
+    
+    // c코드를 컴파일하고 실행파일 생성
+    compileAndExec();
+    
+    /* 
+    processAllFiles(numInputFiles);
 
     int total_inputs = 0;
     int success_count = 0;
@@ -155,7 +149,7 @@ int main(int argc, char *argv[]){
 
     gettimeofday(&start_time, NULL);
 
-    for(int i = 1; i<=10; i++){
+    for(int i = 1; i<=numInputFiles; i++){
         char input_file[100];
         sprintf(input_file, "%s/%d.txt", inputdir, i);
         
@@ -172,9 +166,7 @@ int main(int argc, char *argv[]){
             perror("fork");
             exit(EXIT_FAILURE);
         }
-
-        if(pid == 0){ // child process
-            //close read end of pipe
+        else if(pid == 0){ // child process
             close(fd[0]);
 
             // redirect stdout to the write end of the pipe
@@ -182,16 +174,8 @@ int main(int argc, char *argv[]){
                 perror("dup2");
             }
             close(fd[1]);
-*/
 
-            // Execute the target program
-            /* execlp()의 argument
-             * 1st. 실행할 프로그램의 경로 지정
-             * 2nd. 실행할 프로그램명
-             * 3rd. 실행할 프로그램이 필요로 하는 입력 또는 설정 전달
-             * 4th. 추가적인 실행 인자, 마지막 인자는 항상 NULL로 설정하며 이는 인자 목록의 끝을 의미함
-            */
-/*            execlp(targetsrc, targetsrc, input_file, NULL);
+            execlp(targetsrc, targetsrc, input_file, NULL);
             perror("excelp");
             exit(EXIT_FAILURE);
         }
@@ -257,6 +241,7 @@ int main(int argc, char *argv[]){
     printf("Timeout count: %d\n", timeout_count);
     printf("Crash count: %d\n", crash_count);
     printf("Wrong answer count: %d\n", wrong_answer_count);
-*/
+    */
+
     return 0;
 }
